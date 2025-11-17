@@ -1,0 +1,14 @@
+[theme]
+# Nord Dark Theme Configuration for Streamlit
+base = "dark"
+primaryColor = "#81a1c1"        # Nord blue (nord9)
+backgroundColor = "#2e3440"     # Nord polar night (nord0)
+secondaryBackgroundColor = "#3b4252"  # Nord polar night (nord1)
+textColor = "#eceff4"          # Nord snow storm (nord6)
+
+[server]
+headless = true
+
+[browser]
+serverAddress = "0.0.0.0"
+gatherUsageStats = false

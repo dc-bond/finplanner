@@ -45,11 +45,7 @@ venv.bak/
 ehthumbs.db
 Thumbs.db
 
-# Jupyter
-.ipynb_checkpoints
-
-# Streamlit
-.streamlit/
+.streamlit/secrets.toml
 
 # Nix
 result
