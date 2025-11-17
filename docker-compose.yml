@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  finplanner:
+    build: .
+    container_name: finplanner
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8501:8501"  # localhost only by default
+    # uncomment the line below and comment the line above for network access
+    # - "8501:8501"

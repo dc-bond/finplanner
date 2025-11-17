@@ -55,7 +55,6 @@
             echo ""
             echo "Financial Modeling environment activated"
             echo "  streamlit run app.py   - Launch web app"
-            echo "  python -m unittest tests.test_calculations tests.test_validation -v - Run tests"
             echo ""
           '';
         };

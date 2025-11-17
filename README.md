@@ -38,8 +38,22 @@ cd finplanner
 # Build the Docker image
 docker build -t finplanner .
 
-# Run the container
+# Run the container (localhost only - recommended)
+docker run -p 127.0.0.1:8501:8501 finplanner
+
+# Or allow network access (use with caution)
 docker run -p 8501:8501 finplanner
+```
+
+#### Docker Compose
+
+Alternatively, use Docker Compose:
+
+```bash
+# Run with docker-compose (localhost only by default)
+docker-compose up -d
+
+# Or edit docker-compose.yml to allow network access
 ```
 
 The application will be available at http://localhost:8501
@@ -109,6 +123,12 @@ Launch the application and navigate through the tabs:
 2. **Account Balances**: View portfolio growth and real estate equity projections
 3. **Cash Flow**: Analyze income vs expenses over time
 4. **Monte Carlo**: Explore probabilistic outcomes with confidence intervals
+
+## Security Notice
+
+🔒 **Data Privacy**: This application stores no data permanently. All financial information is ephemeral and resets to default values on page refresh. No data is saved to disk or transmitted externally.
+
+🌐 **Network Access**: For maximum security when using Docker, bind to localhost only using `docker run -p 127.0.0.1:8501:8501 finplanner`. This prevents external network access to the application data. For secure public access, consider using a reverse proxy like Traefik with authentication middleware such as Authelia.
 
 ## Important Disclaimer
 
