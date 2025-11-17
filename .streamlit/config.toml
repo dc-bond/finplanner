@@ -8,7 +8,8 @@ textColor = "#eceff4"          # Nord snow storm (nord6)
 
 [server]
 headless = true
+port = 8501
+address = "localhost"
 
 [browser]
-serverAddress = "0.0.0.0"
 gatherUsageStats = false
