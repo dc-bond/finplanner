@@ -13,22 +13,6 @@ import copy
 class MonteCarloEngine:
     """Monte Carlo simulation engine for financial projections"""
     
-    ASSET_CLASS_VOLATILITY = {
-        'stocks': 0.18,
-        'bonds': 0.05,
-        'international': 0.20,
-        'real_estate': 0.15,
-        'cash': 0.01,
-        'commodities': 0.25
-    }
-    
-    ASSET_CORRELATIONS = {
-        ('stocks', 'bonds'): -0.1,
-        ('stocks', 'international'): 0.8,
-        ('stocks', 'real_estate'): 0.6,
-        ('bonds', 'real_estate'): 0.2,
-        ('international', 'real_estate'): 0.5,
-    }
     
     def __init__(self, num_simulations: int = 1000):
         """Initialize Monte Carlo engine
@@ -40,24 +24,6 @@ class MonteCarloEngine:
         self.simulation_results = []
         self.summary_stats = {}
         
-    def map_account_to_asset_class(self, account_type: str, growth_strategy: str) -> str:
-        """Map account types and strategies to asset classes for volatility calculation"""
-        
-        if account_type in ['US Treasury', 'Treasury Direct']:
-            return 'bonds'
-        elif account_type == 'HSA':
-            return 'stocks'
-        elif account_type in ['401k', 'TSP', 'Roth IRA', 'Traditional IRA']:
-            if growth_strategy == 'Target Date':
-                return 'stocks'
-            else:
-                return 'stocks'
-        elif account_type == '529':
-            return 'stocks'
-        elif account_type == 'Taxable':
-            return 'stocks'
-        else:
-            return 'stocks'
     
     def calculate_volatility_from_return(self, return_rate: float) -> float:
         """Calculate volatility based on expected return rate using realistic risk/return relationship

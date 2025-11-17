@@ -13,17 +13,6 @@ class GrowthStrategy(Enum):
     TARGET_DATE = "Target Date"
 
 
-class AccountType(Enum):
-    ACCOUNT_401K = "401k"
-    IRA_TRADITIONAL = "Traditional IRA"
-    IRA_ROTH = "Roth IRA"
-    TAXABLE = "Taxable"
-    HSA = "HSA"
-    TSP = "TSP"
-    TREASURY_DIRECT = "Treasury Direct"
-    US_TREASURY = "US Treasury"
-    ACCOUNT_529 = "529"
-
 
 @dataclass
 class Person:
