@@ -6,8 +6,9 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
-  
+
   outputs = { self, nixpkgs, flake-utils }:
+
     {
       nixosModules.default = { config, lib, pkgs, ... }: {
         options.services.finplanner = {
@@ -55,23 +56,23 @@
           scipy
         ];
         
-        finplanner = pkgs.python3Packages.buildPythonApplication {
+        python-with-deps = pkgs.python3.withPackages (ps: python-deps);
+        
+        finplanner = pkgs.stdenv.mkDerivation {
           pname = "finplanner";
-          version = "1.0.0";
+          version = "1.0.1";
           src = ./.;
           
-          propagatedBuildInputs = python-deps;
-          
-          doCheck = false;
+          buildInputs = [ python-with-deps ];
           
           installPhase = ''
             mkdir -p $out/bin $out/share/finplanner
             cp -r . $out/share/finplanner/
             
             cat > $out/bin/finplanner << EOF
-            #!/bin/sh
+            #!${pkgs.bash}/bin/bash
             cd $out/share/finplanner
-            ${pkgs.python3}/bin/python -m streamlit run app.py --server.port=8501 --server.address=0.0.0.0 "\$@"
+            exec ${python-with-deps}/bin/python -m streamlit run app.py --server.port=8501 --server.address=0.0.0.0 "\$@"
             EOF
             chmod +x $out/bin/finplanner
           '';
