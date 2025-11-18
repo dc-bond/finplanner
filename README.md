@@ -77,31 +77,33 @@ streamlit run app.py
 #### For Deployment
 
 ```bash
-# Install and run directly
+# Run directly from GitHub (no installation needed)
 nix run github:dc-bond/finplanner
-
-# Or build and install
-nix build github:dc-bond/finplanner
-./result/bin/finplanner
 ```
 
-#### NixOS Service
+#### As a NixOS Service
 
 Add to your NixOS configuration:
 
 ```nix
 {
-  inputs.finplanner.url = "github:dc-bond/finplanner";
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
+    finplanner.url = "github:dc-bond/finplanner";
+  };
   
-  outputs = { self, nixpkgs, finplanner }: {
-    nixosConfigurations.your-host = nixpkgs.lib.nixosSystem {
+  outputs = { self, nixpkgs, finplanner, ... }: {
+    nixosConfigurations.your-hostname = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux";
       modules = [
+        ./configuration.nix
         finplanner.nixosModules.default
         {
           services.finplanner = {
             enable = true;
-            port = 8501;
-            address = "0.0.0.0";  # for external access
+            port = 8501; # optional, defaults to 8501
+            address = "0.0.0.0"; # optional, defaults to "127.0.0.1"
+            openFirewall = true; # open firewall port if needed
           };
         }
       ];
