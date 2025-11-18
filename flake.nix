@@ -1,13 +1,49 @@
 {
+
   description = "Financial planning application";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
-
+  
   outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
+    {
+      nixosModules.default = { config, lib, pkgs, ... }: {
+        options.services.finplanner = {
+          enable = lib.mkEnableOption "Financial planning application";
+          port = lib.mkOption {
+            type = lib.types.int;
+            default = 8501;
+            description = "Port to listen on";
+          };
+          address = lib.mkOption {
+            type = lib.types.str;
+            default = "127.0.0.1";
+            description = "Address to bind to";
+          };
+        };
+        
+        config = lib.mkIf config.services.finplanner.enable {
+          systemd.services.finplanner = {
+            description = "Financial Planning Application";
+            wantedBy = [ "multi-user.target" ];
+            after = [ "network.target" ];
+            
+            serviceConfig = {
+              ExecStart = "${self.packages.${pkgs.system}.finplanner}/bin/finplanner --server.port=${toString config.services.finplanner.port} --server.address=${config.services.finplanner.address}";
+              Restart = "always";
+              RestartSec = "10";
+              User = "finplanner";
+              Group = "finplanner";
+              DynamicUser = true;
+            };
+          };
+          
+          networking.firewall.allowedTCPPorts = lib.mkIf (config.services.finplanner.address == "0.0.0.0") [ config.services.finplanner.port ];
+        };
+      };
+    } // flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
         
@@ -62,42 +98,6 @@
         # package for deployment
         packages.default = finplanner;
         packages.finplanner = finplanner;
-        
-        # nixos service module
-        nixosModules.default = { config, lib, pkgs, ... }: {
-          options.services.finplanner = {
-            enable = lib.mkEnableOption "Financial planning application";
-            port = lib.mkOption {
-              type = lib.types.int;
-              default = 8501;
-              description = "Port to listen on";
-            };
-            address = lib.mkOption {
-              type = lib.types.str;
-              default = "127.0.0.1";
-              description = "Address to bind to";
-            };
-          };
-          
-          config = lib.mkIf config.services.finplanner.enable {
-            systemd.services.finplanner = {
-              description = "Financial Planning Application";
-              wantedBy = [ "multi-user.target" ];
-              after = [ "network.target" ];
-              
-              serviceConfig = {
-                ExecStart = "${finplanner}/bin/finplanner --server.port=${toString config.services.finplanner.port} --server.address=${config.services.finplanner.address}";
-                Restart = "always";
-                RestartSec = "10";
-                User = "finplanner";
-                Group = "finplanner";
-                DynamicUser = true;
-              };
-            };
-            
-            networking.firewall.allowedTCPPorts = lib.mkIf (config.services.finplanner.address == "0.0.0.0") [ config.services.finplanner.port ];
-          };
-        };
       }
     );
 }
