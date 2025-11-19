@@ -1,5 +1,5 @@
 {
-
+  
   description = "financial planning application";
 
   inputs = {
@@ -76,6 +76,23 @@
         
         python = pkgs.python311;
         
+        pythonOverrides = pkgs.python311.override {
+          packageOverrides = self: super: {
+            streamlit = super.streamlit.overridePythonAttrs (old: { doCheck = false; });
+            sqlframe = super.sqlframe.overridePythonAttrs (old: { doCheck = false; });
+            narwhals = super.narwhals.overridePythonAttrs (old: { doCheck = false; });
+            polars = super.polars.overridePythonAttrs (old: { doCheck = false; });
+          };
+        };
+        
+        pythonEnv = pythonOverrides.withPackages (ps: with ps; [
+          streamlit
+          numpy
+          pandas
+          matplotlib
+          scipy
+        ]);
+        
         finplanner = pkgs.stdenv.mkDerivation rec {
           pname = "finplanner";
           version = "1.0.1";
@@ -83,35 +100,26 @@
           src = ./.;
           
           nativeBuildInputs = [ pkgs.makeWrapper ];
-          buildInputs = [ python python.pkgs.pip pkgs.cacert ];
+          buildInputs = [ pythonEnv ];
           
           dontBuild = true;
-
+          
           installPhase = ''
             runHook preInstall
             
             mkdir -p $out/share/finplanner
-            mkdir -p $out/lib/python
             mkdir -p $out/bin
             
             # copy application files
             cp -r . $out/share/finplanner/
             
-            # install Python dependencies using pip
-            export HOME=$TMPDIR
-            ${python.pkgs.pip}/bin/pip install \
-              --no-cache-dir \
-              --prefix=$out \
-              --no-warn-script-location \
-              -r $out/share/finplanner/requirements.txt
-            
             # create wrapper script
-            makeWrapper $out/bin/streamlit $out/bin/finplanner \
+            makeWrapper ${pythonEnv}/bin/streamlit $out/bin/finplanner \
               --add-flags "run" \
               --add-flags "$out/share/finplanner/app.py" \
               --add-flags "--server.headless=true" \
               --add-flags "--browser.gatherUsageStats=false" \
-              --set PYTHONPATH "$out/lib/python3.11/site-packages:$out/share/finplanner" \
+              --set PYTHONPATH "$out/share/finplanner:${pythonEnv}/${pythonEnv.sitePackages}" \
               --set HOME "/tmp"
             
             runHook postInstall
@@ -125,8 +133,7 @@
           };
         };
         
-        # dev environment with pip-installed packages
-        pythonWithPackages = python.withPackages (ps: with ps; [
+        pythonDevEnv = python.withPackages (ps: with ps; [
           pip
           ipython
           black
@@ -134,13 +141,12 @@
         ]);
         
       in {
-
         devShells.default = pkgs.mkShell {
-          buildInputs = [ pythonWithPackages ];
+          buildInputs = [ pythonDevEnv ];
           
           shellHook = ''
             echo ""
-            echo "Finplanner development environment activated"
+            echo "Financial planning development environment activated"
             echo "Python version: $(python --version)"
             echo ""
             echo "Available commands:"
@@ -150,19 +156,15 @@
             echo "  pylint *.py            - Lint code"
             echo ""
             
-            # set environment variables for development
             export PYTHONPATH="$PWD:$PYTHONPATH"
             export STREAMLIT_CONFIG_DIR="$PWD/.streamlit"
             
-            # ensure config directory exists
             mkdir -p .streamlit
             
-            # create config.toml if it doesn't exist
             if [ ! -f .streamlit/config.toml ] && [ -f config.toml ]; then
               cp config.toml .streamlit/
             fi
             
-            # install requirements if not already installed
             if [ ! -d "venv" ]; then
               echo "Creating virtual environment..."
               python -m venv venv
@@ -180,7 +182,6 @@
           finplanner = finplanner;
         };
         
-        # app for `nix run`
         apps.default = flake-utils.lib.mkApp {
           drv = finplanner;
         };
