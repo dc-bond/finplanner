@@ -83,29 +83,30 @@
           src = ./.;
           
           nativeBuildInputs = [ pkgs.makeWrapper ];
-          buildInputs = [ python pkgs.cacert ];
+          buildInputs = [ python python.pkgs.pip pkgs.cacert ];
           
           dontBuild = true;
-          
+
           installPhase = ''
             runHook preInstall
             
             mkdir -p $out/share/finplanner
             mkdir -p $out/lib/python
+            mkdir -p $out/bin
             
             # copy application files
             cp -r . $out/share/finplanner/
             
             # install Python dependencies using pip
             export HOME=$TMPDIR
-            ${python}/bin/pip install \
+            ${python.pkgs.pip}/bin/pip install \
               --no-cache-dir \
               --prefix=$out \
               --no-warn-script-location \
               -r $out/share/finplanner/requirements.txt
             
             # create wrapper script
-            makeWrapper ${python}/bin/streamlit $out/bin/finplanner \
+            makeWrapper $out/bin/streamlit $out/bin/finplanner \
               --add-flags "run" \
               --add-flags "$out/share/finplanner/app.py" \
               --add-flags "--server.headless=true" \
